@@ -14,7 +14,7 @@ app.use(express.json());
 
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.vqv383i.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -51,6 +51,8 @@ const dbConnect = async () => {
   dbConnect()
 
 const userCollection = client.db("exploreDb").collection("users");
+const packageCollection = client.db("exploreDb").collection("package");
+const bookCollection = client.db("exploreDb").collection("booking");
 
 
 app.post('/users',async(req,res)=>{
@@ -65,9 +67,28 @@ app.post('/users',async(req,res)=>{
     res.send(result);
   
   })
+app.post('/booking',async(req,res)=>{
+    const book=req.body
+
+    const result = await bookCollection.insertOne(book);
+    res.send(result);
+  
+  })
 app.get('/users',async(req,res)=>{
     const users=await userCollection.find().toArray()
     res.send(users)
+})
+app.get('/package',async(req,res)=>{
+  const id=req.query.id
+  console.log(id,"id from server")
+  let filter={}
+if (id){
+  filter = { _id: new ObjectId(id) }
+
+}
+  const packages=await packageCollection.find(filter).toArray()
+  console.log(packages,"pacages frm server")
+  res.send(packages)
 })
 app.get('/', async(req, res) => {
     res.send('explore is sitting')
