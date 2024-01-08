@@ -53,6 +53,7 @@ const dbConnect = async () => {
 const userCollection = client.db("exploreDb").collection("users");
 const packageCollection = client.db("exploreDb").collection("package");
 const bookCollection = client.db("exploreDb").collection("booking");
+const guideCollection = client.db("exploreDb").collection("allGuide");
 
 
 app.post('/jwt', async (req, res) => {
@@ -103,13 +104,13 @@ app.get('/users/admin/:email', verifyToken,async (req, res) => {
   let admin = false;
   if (user) {
     admin = user?.role === 'admin';
-    console.log('admin found')
+    // console.log('admin found')
   }
   res.send({ admin });
 })
 app.post('/users',async(req,res)=>{
     const user=req.body
-    console.log(user,"from server user")
+    // console.log(user,"from server user")
     const query={email:user.email}
     const userExist=await userCollection.findOne(query)
     if (userExist){
@@ -127,7 +128,7 @@ app.post('/booking',async(req,res)=>{
     res.send(result);
   
   })
-app.get('/users',async(req,res)=>{
+app.get('/users',verifyToken,async(req,res)=>{
     const users=await userCollection.find().toArray()
     res.send(users)
 })
@@ -143,6 +144,54 @@ if (id){
   // console.log(packages,"pacages frm server")
   res.send(packages)
 })
+
+
+app.patch('/admin/:email', verifyToken,verifyAdmin, async (req, res) => {
+  const userEmail = req.params.email;
+  console.log(userEmail);
+
+  const filter = { email: userEmail };
+  const updated = {
+    $set: {
+      role: "admin"
+    }
+  };
+
+  try {
+    const result = await userCollection.updateOne(filter, updated);
+    res.send(result);
+  } catch (error) {
+    console.error(error);
+    res.send(error.message);
+  }
+});
+app.patch('/guide/:email', verifyToken,verifyAdmin, async (req, res) => {
+  const userEmail = req.params.email;
+  console.log(userEmail);
+
+  const filter = { email: userEmail };
+  const updated = {
+    $set: {
+      role: "guide"
+    }
+  };
+
+  try {
+    const result = await userCollection.updateOne(filter, updated);
+    res.send(result);
+  } catch (error) {
+    console.error(error);
+    res.send(error.message);
+  }
+});
+app.post('/guide',async(req,res)=>{
+  const guide=req.body
+
+  const result = await guideCollection.insertOne(guide);
+  res.send(result);
+
+})
+
 app.get('/', async(req, res) => {
     res.send('explore is sitting')
   })
