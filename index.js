@@ -121,10 +121,17 @@ app.post('/users',async(req,res)=>{
     res.send(result);
   
   })
-app.post('/booking',async(req,res)=>{
+app.post('/booking',verifyToken,async(req,res)=>{
     const book=req.body
 
     const result = await bookCollection.insertOne(book);
+    res.send(result);
+  
+  })
+app.post('/package',verifyToken,verifyAdmin,async(req,res)=>{
+    const pack=req.body
+
+    const result = await packageCollection.insertOne(pack);
     res.send(result);
   
   })
