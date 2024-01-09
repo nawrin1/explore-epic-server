@@ -54,6 +54,7 @@ const userCollection = client.db("exploreDb").collection("users");
 const packageCollection = client.db("exploreDb").collection("package");
 const bookCollection = client.db("exploreDb").collection("booking");
 const guideCollection = client.db("exploreDb").collection("allGuide");
+const wishCollection = client.db("exploreDb").collection("wishlist");
 
 
 app.post('/jwt', async (req, res) => {
@@ -62,7 +63,7 @@ app.post('/jwt', async (req, res) => {
   res.send({ token });
 })
 const verifyToken = (req, res, next) => {
-  // console.log('inside verify', req.headers.authorization);
+  console.log('inside verify', req.headers.authorization);
   if (!req.headers.authorization) {
     console.log('token prob?')
 
@@ -135,9 +136,41 @@ app.post('/package',verifyToken,verifyAdmin,async(req,res)=>{
     res.send(result);
   
   })
+app.post('/wishlist',verifyToken,async(req,res)=>{
+    const wishes=req.body
+
+    const result = await wishCollection.insertOne(wishes);
+    res.send(result);
+  
+  })
+
 app.get('/users',verifyToken,async(req,res)=>{
     const users=await userCollection.find().toArray()
     res.send(users)
+})
+app.get('/booking',verifyToken,async(req,res)=>{
+  console.log(req.query)
+    const userEmail=req.query.email
+    // console.log(userEmail,"from bac")
+    let filter={}
+    if (userEmail){
+      filter={email:userEmail}
+    }
+    const book=await bookCollection.find(filter).toArray()
+    console.log(book)
+    res.send(book)
+})
+app.get('/wishlist',verifyToken,async(req,res)=>{
+  console.log(req.query)
+    const userEmail=req.query.email
+    console.log(userEmail,"from wish back")
+    let filter={}
+    if (userEmail){
+      filter={email:userEmail}
+    }
+    const wish=await wishCollection.find(filter).toArray()
+    console.log(wish)
+    res.send(wish)
 })
 app.get('/package',async(req,res)=>{
   const id=req.query.id
@@ -155,7 +188,7 @@ if (id){
 
 app.patch('/admin/:email', verifyToken,verifyAdmin, async (req, res) => {
   const userEmail = req.params.email;
-  console.log(userEmail);
+  // console.log(userEmail);
 
   const filter = { email: userEmail };
   const updated = {
@@ -174,7 +207,7 @@ app.patch('/admin/:email', verifyToken,verifyAdmin, async (req, res) => {
 });
 app.patch('/guide/:email', verifyToken,verifyAdmin, async (req, res) => {
   const userEmail = req.params.email;
-  console.log(userEmail);
+  // console.log(userEmail);
 
   const filter = { email: userEmail };
   const updated = {
