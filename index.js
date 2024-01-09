@@ -92,6 +92,18 @@ const verifyAdmin = async (req, res, next) => {
   }
   next();
 }
+const verifyGuide = async (req, res, next) => {
+  const email = req.decoded.email;
+  console.log(email,"is it guide? verify guide")
+  const query = { email: email };
+  const user = await userCollection.findOne(query);
+  const isGuide= user?.role === 'guide';
+  if (!isGuide) {
+    // console.log('.......')
+    return res.status(403).send({ message: 'forbidden access' });
+  }
+  next();
+}
 app.get('/users/admin/:email', verifyToken,async (req, res) => {
   const email = req.params.email;
 
@@ -108,6 +120,23 @@ app.get('/users/admin/:email', verifyToken,async (req, res) => {
     // console.log('admin found')
   }
   res.send({ admin });
+})
+app.get('/users/guide/:email', verifyToken,async (req, res) => {
+  const email = req.params.email;
+
+  if (email !== req.decoded.email) {
+    console.log('nottt veridyyy')
+    return res.status(403).send({ message: 'forbidden access' })
+  }
+
+  const query = { email: email };
+  const user = await userCollection.findOne(query);
+  let guide = false;
+  if (user) {
+    guide = user?.role === 'guide';
+    // console.log('admin found')
+  }
+  res.send({ guide });
 })
 app.post('/users',async(req,res)=>{
     const user=req.body
@@ -229,6 +258,18 @@ app.post('/guide',async(req,res)=>{
 
   const result = await guideCollection.insertOne(guide);
   res.send(result);
+
+})
+
+app.delete('/wishlist/:id',verifyToken, async (req, res) => {
+  const id = req.params.id;
+  const filter = { _id: new ObjectId(id) }
+  console.log(filter,"from del")
+  const result = await wishCollection.deleteOne(filter)
+ 
+  res.send(result);
+
+
 
 })
 
