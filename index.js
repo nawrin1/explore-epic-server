@@ -189,6 +189,18 @@ app.get('/booking',verifyToken,async(req,res)=>{
     console.log(book)
     res.send(book)
 })
+app.get('/guide',verifyToken,verifyGuide,async(req,res)=>{
+  console.log(req.query)
+    const userEmail=req.query.email
+    // console.log(userEmail,"from bac")
+    let filter={}
+    if (userEmail){
+      filter={email:userEmail}
+    }
+    const guide=await guideCollection.find(filter).toArray()
+   
+    res.send(guide)
+})
 app.get('/wishlist',verifyToken,async(req,res)=>{
   console.log(req.query)
     const userEmail=req.query.email
